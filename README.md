@@ -24,7 +24,7 @@ everything it can.
   `.rar`) can be unpacked automatically.
 
 <p align="center">
-  <img alt="nexus-downloader in the terminal" src="assets/screenshot.png" width="800">
+  <img alt="nexus-downloader in the terminal" src="assets/terminal.png" width="800">
 </p>
 
 ## Setup
