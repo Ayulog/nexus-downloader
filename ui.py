@@ -80,10 +80,13 @@ def hms(seconds):
     return f"{seconds // 3600}:{seconds // 60 % 60:02d}:{seconds % 60:02d}"
 
 
-def short(name):
+def fit(name):
     width = config.NAME_WIDTH
-    name = name if len(name) <= width else name[:width - 1] + "…"
-    return escape(name.ljust(width))
+    return (name if len(name) <= width else name[:width - 1] + "…").ljust(width)
+
+
+def short(name):
+    return escape(fit(name))
 
 
 class Header:
@@ -91,16 +94,16 @@ class Header:
         elapsed = time.time() - started
         done, total, scanned = stats["processed"], stats["total"], stats["scanned"]
         speed = stats["bytes"] / elapsed if elapsed > 0 else 0
-        todo = stats["todo_bytes"] / scanned * total if 0 < scanned < total else stats["todo_bytes"]
-        remaining = max(todo - stats["bytes"], 0)
-        eta = hms(remaining / speed) if speed else "-:--:--"
         if scanned < total:
-            eta = f"~{eta}"
+            amount, eta = size_str(stats["bytes"]), f"pending [dim](scanning {scanned}/{total})[/]"
+        else:
+            remaining = max(stats["todo_bytes"] - stats["bytes"], 0)
+            amount = f"{size_str(stats['bytes'])} / {size_str(stats['bytes'] + remaining)}"
+            eta = hms(remaining / speed) if speed else "-:--:--"
         title = "[bold yellow]Stopping[/]" if stats["stopping"] else "[bold cyan]Downloading[/]"
         return Rule(
-            f"{title} [bold]{done}/{total}[/] mods • {size_str(stats['bytes'])}"
-            f" / {size_str(stats['bytes'] + remaining)} • {speed / 1024 ** 2:.1f} MB/s • elapsed {hms(elapsed)} • eta {eta}"
-            + (f" • [dim]scanning {scanned}/{total}[/]" if scanned < total else "")
+            f"{title} [bold]{done}/{total}[/] mods • {amount}"
+            f" • {speed / 1024 ** 2:.1f} MB/s • elapsed {hms(elapsed)} • eta {eta}"
             + (f" • [red]{stats['failed']} failed[/]" if stats["failed"] else ""),
             style="cyan",
         )
@@ -117,8 +120,8 @@ class LogView:
             return Group(*lines)
 
 
-def view():
-    return Group("", Header(), "", progress, "", Rule("[dim]log[/]", style="dim"), LogView())
+def view(up_next=""):
+    return Group("", Header(), "", progress, up_next, "", Rule("[dim]log[/]", style="dim"), LogView())
 
 
 def finish():

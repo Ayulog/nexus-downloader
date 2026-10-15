@@ -9,16 +9,20 @@ from pathlib import Path
 
 import py7zr
 from curl_cffi import requests
+from rich.console import Group
 from rich.live import Live
+from rich.text import Text
 
 from auth import get_token
 from config import (
-    ARCHIVE_EXTENSIONS, CHUNK_SIZE, CONNECT_TIMEOUT_S, DELETE_ARCHIVE_AFTER_EXTRACT, DOWNLOAD_DIR, DOWNLOAD_RETRIES,
+    ARCHIVE_EXTENSIONS, CHUNK_SIZE, CONFIG_FILE, NEXUS_SESSION_COOKIE, CONNECT_TIMEOUT_S, DELETE_ARCHIVE_AFTER_EXTRACT, DOWNLOAD_DIR, DOWNLOAD_RETRIES,
     EXTRACT, FILE_CATEGORIES, MAX_PARALLEL_DOWNLOADS, MAX_QUEUED_LINKS, MOD_LIST, READ_TIMEOUT_S, REQUEST_DELAY_S,
     SCAN_DELAY_S, SEVEN_ZIP,
 )
 from nexus import generate_download_url, mod_files, mod_info
-from ui import console, finish, hms, log, open_log, progress, record_failure, short, size_str, stats, stats_lock, view
+from ui import (
+    console, finish, fit, hms, log, open_log, progress, record_failure, short, size_str, stats, stats_lock, view,
+)
 
 stop_event = threading.Event()
 thread_local = threading.local()
@@ -239,6 +243,38 @@ class Scanner(threading.Thread):
         return result
 
 
+class UpNext:
+    STYLES = ("grey66", "grey46", "grey30")
+
+    def __init__(self, scanner, mods):
+        self.scanner = scanner
+        self.mods = mods
+
+    def __rich__(self):
+        lines = []
+        for domain, mod_id, _ in self.mods[stats["processed"]:]:
+            if len(lines) == len(self.STYLES):
+                break
+            key = (domain, mod_id)
+            if key in submitted:
+                continue
+            style = self.STYLES[len(lines)]
+            if not self.scanner.ready[key].is_set():
+                lines.append(Text(f"{fit(f'mod ({mod_id})')} scanning…", style=style))
+                continue
+            result = self.scanner.results[key]
+            if isinstance(result, Exception):
+                continue
+            label, _, items = result
+            todo = [file_size(f) for f, _, _, done in items if not done]
+            if todo:
+                lines.append(Text(f"{fit(label)} {size_str(sum(todo)):>10}  up next", style=style))
+        return Group(*lines)
+
+
+submitted = set()
+
+
 def queue_mod(scanner, domain, mod_id, link, pool, slots, futures):
     try:
         label, folder, items = scanner.get((domain, mod_id))
@@ -263,6 +299,7 @@ def queue_mod(scanner, domain, mod_id, link, pool, slots, futures):
             url = generate_download_url(domain, mod_id, f["file_id"])
             folder.mkdir(parents=True, exist_ok=True)
             futures.append(pool.submit(worker, slots, url, target, out, file_size(f), label))
+            submitted.add((domain, mod_id))
         except Stopped:
             slots.release()
             raise
@@ -293,8 +330,24 @@ def read_mod_list():
     return mods
 
 
+def preflight(mods):
+    if not NEXUS_SESSION_COOKIE:
+        console.print(
+            f"[red]No session cookie set.[/] Log in on nexusmods.com, open the browser dev tools "
+            f"(Application → Cookies), copy the value of [bold]nexusmods_session[/] and paste it as "
+            f"[bold]session_cookie[/] in {CONFIG_FILE}"
+        )
+        return False
+    if not mods:
+        console.print(f"[red]No mods to download.[/] Add one Nexus mod link per line to {MOD_LIST}")
+        return False
+    return True
+
+
 def run():
     mods = read_mod_list()
+    if not preflight(mods):
+        return
     open_log()
     get_token()
     stats["total"] = len(mods)
@@ -309,7 +362,7 @@ def run():
     scanner = Scanner(mods)
     scanner.start()
     try:
-        with Live(view(), console=console, screen=True, refresh_per_second=10):
+        with Live(view(UpNext(scanner, mods)), console=console, screen=True, refresh_per_second=10):
             try:
                 for domain, mod_id, link in mods:
                     queue_mod(scanner, domain, mod_id, link, pool, slots, futures)
