@@ -84,13 +84,38 @@ Everything lives in `config.toml`:
 
 ## Disclaimer
 
-This is an independent, unofficial project and is not affiliated with, endorsed
-by, or connected to Nexus Mods or Black Tree Gaming Ltd. It uses internal
-endpoints that may change or break at any time.
+**Not affiliated.** This is an independent, unofficial project. It is not
+affiliated with, endorsed by, sponsored by or otherwise connected to Nexus Mods,
+Black Tree Gaming Ltd. or the Vortex mod manager. "Nexus Mods", "Vortex" and all
+related names, logos and trademarks belong to their respective owners and are
+used here only to describe what this tool works with.
 
-You are responsible for how you use it: respect the Nexus Mods Terms of
-Service, don't hammer their servers, and support the mod authors whose work you
-download. No warranty of any kind; use at your own risk.
+**Educational purpose.** The code is published for educational, research and
+interoperability purposes only, to document how a mod manager talks to Nexus
+Mods. It relies on internal, undocumented endpoints that are not meant for
+public use and may change, break or be blocked at any time.
+
+**No content is distributed.** This repository contains no mods, files, account
+data or credentials. It only downloads what the person running it is already
+allowed to download with their own Nexus Mods account. Session data stays on
+the user's machine.
+
+**Your responsibility.** By using this software you accept sole responsibility
+for how you use it. You must comply with the Nexus Mods Terms of Service, the
+licences and permissions set by each mod author, and all applicable laws in
+your jurisdiction. Do not use it to overload Nexus Mods' servers, to
+redistribute other people's work, or to get around account limits or paid
+features. Using automated tools may violate the Terms of Service and can lead
+to restrictions on your account; that risk is entirely yours.
+
+**No warranty, no liability.** The software is provided "as is", without
+warranty of any kind. The author is not liable for any claim, damage, account
+suspension, data loss or other consequence arising from its use or misuse. If
+you do not agree with this, do not use the software.
+
+**Takedown.** If you are a rights holder or represent Nexus Mods and have a
+concern about this repository, please open an issue and it will be addressed
+or removed promptly.
 
 ## License
 
