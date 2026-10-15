@@ -2,9 +2,7 @@
 
 A command-line bulk downloader for [Nexus Mods](https://www.nexusmods.com). Drop
 a list of mod links into `mods.txt` and it works through them one by one,
-picking the right file, downloading it and optionally unpacking it. It logs in
-the same way Vortex does (OAuth with PKCE) and talks to the Nexus API for
-everything it can.
+picking the right file, downloading it and optionally unpacking it.
 
 ## Highlights
 
