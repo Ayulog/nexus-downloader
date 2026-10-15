@@ -6,16 +6,6 @@ picking the right file, downloading it and optionally unpacking it. It logs in
 the same way Vortex does (OAuth with PKCE) and talks to the Nexus API for
 everything it can.
 
-<p align="center">
-  <a href="#highlights">Highlights</a> ·
-  <a href="#setup">Setup</a> ·
-  <a href="#run">Run</a> ·
-  <a href="#configuration">Configuration</a> ·
-  <a href="#notes">Notes</a> ·
-  <a href="#disclaimer">Disclaimer</a> ·
-  <a href="#license">License</a>
-</p>
-
 ## Highlights
 
 - **Paste links, get mods**  
