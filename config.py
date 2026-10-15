@@ -13,6 +13,7 @@ with open(CONFIG_FILE, "rb") as fh:
 
 NEXUS_SESSION_COOKIE = _cfg["nexus"]["session_cookie"]
 FILE_CATEGORIES = set(_cfg["nexus"].get("file_categories", ["MAIN"]))
+FALLBACK_CATEGORIES = _cfg["nexus"].get("fallback_categories", ["UPDATE", "OPTIONAL", "MISCELLANEOUS"])
 ALL_FILES_PER_CATEGORY = _cfg["nexus"].get("all_files_per_category", False)
 
 MOD_LIST = BASE_DIR / _cfg["paths"].get("mod_list", "mods.txt")

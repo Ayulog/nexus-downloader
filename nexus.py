@@ -2,7 +2,7 @@ import time
 
 from auth import USER_AGENT, get_token, http_client
 from config import (
-    ALL_FILES_PER_CATEGORY, API_URL, APP_VERSION, DOWNLOAD_URL_ENDPOINT, FILE_CATEGORIES,
+    ALL_FILES_PER_CATEGORY, API_URL, APP_VERSION, DOWNLOAD_URL_ENDPOINT, FALLBACK_CATEGORIES, FILE_CATEGORIES,
     NEXUS_SESSION_COOKIE, PROTOCOL_VERSION, RATE_LIMIT_WAIT_S,
 )
 from ui import log
@@ -48,8 +48,14 @@ def mod_info(domain, mod_id):
 
 
 def mod_files(domain, mod_id):
-    files = [f for f in api_get(f"/games/{domain}/mods/{mod_id}/files.json")["files"]
-             if f["category_name"] in FILE_CATEGORIES]
+    all_files = api_get(f"/games/{domain}/mods/{mod_id}/files.json")["files"]
+    files = [f for f in all_files if f["category_name"] in FILE_CATEGORIES]
+    for category in FALLBACK_CATEGORIES:
+        if files:
+            break
+        files = [f for f in all_files if f["category_name"] == category]
+        if files:
+            log("INFO", f"mod {mod_id}: no {'/'.join(sorted(FILE_CATEGORIES))} file, using {category}")
     if ALL_FILES_PER_CATEGORY:
         return files
     primary = [f for f in files if f["is_primary"]]

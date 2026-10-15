@@ -1,6 +1,7 @@
 [nexus]
 session_cookie = ""
 file_categories = ["MAIN"]
+fallback_categories = ["UPDATE", "OPTIONAL", "MISCELLANEOUS"]
 all_files_per_category = false
 
 [paths]
