@@ -1,0 +1,28 @@
+[nexus]
+session_cookie = ""
+file_categories = ["MAIN"]
+all_files_per_category = false
+
+[paths]
+mod_list = "mods.txt"
+download_dir = "downloads"
+log_dir = "logs"
+
+[download]
+max_parallel = 2
+max_queued_links = 3
+request_delay_s = 4.0
+scan_delay_s = 0.2
+retries = 3
+rate_limit_wait_s = 60
+connect_timeout_s = 15
+read_timeout_s = 120
+
+[extract]
+enabled = false
+delete_archive_after = false
+seven_zip = "C:/Program Files/7-Zip/7z.exe"
+
+[ui]
+log_lines = 12
+name_width = 45

@@ -1,0 +1,6 @@
+__pycache__/
+downloads/
+logs/
+config.toml
+*.part
+mods.txt
