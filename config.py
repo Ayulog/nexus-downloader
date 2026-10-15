@@ -20,6 +20,9 @@ DOWNLOAD_DIR = BASE_DIR / _cfg["paths"].get("download_dir", "downloads")
 LOG_DIR = BASE_DIR / _cfg["paths"].get("log_dir", "logs")
 SESSION_FILE = Path.home() / ".nexus_session.json"
 
+if not MOD_LIST.exists():
+    MOD_LIST.write_text("", encoding="utf-8")
+
 MAX_PARALLEL_DOWNLOADS = _cfg["download"].get("max_parallel", 2)
 MAX_QUEUED_LINKS = _cfg["download"].get("max_queued_links", 3)
 REQUEST_DELAY_S = _cfg["download"].get("request_delay_s", 4.0)
