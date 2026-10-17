@@ -4,22 +4,7 @@ A command-line bulk downloader for [Nexus Mods](https://www.nexusmods.com). Drop
 a list of mod links into `mods.txt` and it works through them one by one,
 picking the right file, downloading it and optionally unpacking it.
 
-## Highlights
-
-- **Paste links, get mods**  
-  One mod page link per line. The downloader resolves each to its main file,
-  falls back to update/optional/misc files when a mod has no main file, and skips
-  removed or hidden mods with a clear reason.
-
-- **Clean live terminal view**  
-  Progress, speed and time left for every download, a header with the overall
-  size and ETA, the next three mods fading out below, and a running log.
-
-- **Resumable and tidy**  
-  Finished files are skipped on the next run, so you can stop with Ctrl+C at any
-  time. Every mod lands in its own readable folder, e.g.
-  `downloads/skyrimspecialedition/SkyUI (12604)/`, and archives (`.zip`, `.7z`,
-  `.rar`) can be unpacked automatically.
+<br>
 
 <p align="center">
   <img alt="nexus-downloader in the terminal" src="assets/terminal.png" width="800">
