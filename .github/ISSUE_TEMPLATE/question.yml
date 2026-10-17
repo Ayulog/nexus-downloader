@@ -1,0 +1,17 @@
+name: Question
+description: Ask how something works or how to set it up
+labels: ["question"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: Check the Setup, Configuration and Notes sections of the README first.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: OS, Python version, config or log snippets if relevant. Never paste your session cookie.

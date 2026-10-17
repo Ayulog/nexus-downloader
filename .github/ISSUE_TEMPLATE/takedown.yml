@@ -1,0 +1,31 @@
+name: Takedown / rights holder concern
+description: For rights holders or Nexus Mods representatives
+labels: ["takedown"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        If you are a rights holder or represent Nexus Mods and have a concern about
+        this repository, describe it below. It will be addressed or removed promptly.
+
+  - type: input
+    id: who
+    attributes:
+      label: Who you represent
+      placeholder: Nexus Mods, mod author, ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: concern
+    attributes:
+      label: Concern
+      description: What should be changed or removed, and why?
+    validations:
+      required: true
+
+  - type: input
+    id: contact
+    attributes:
+      label: Contact
+      description: Optional, if you'd prefer to continue the conversation outside of GitHub.

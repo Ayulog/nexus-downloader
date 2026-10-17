@@ -1,0 +1,110 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please **never paste your `session_cookie`, tokens or
+        the contents of `~/.nexus_session.json`**. Redact them from config and logs.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Login / session (browser login, token refresh, session cookie)
+        - Resolving mods (file categories, fallbacks, removed/hidden mods)
+        - Downloading (speed, retries, incomplete files, resume)
+        - Extracting archives (zip, 7z, rar, 7-Zip)
+        - Terminal view / logs
+        - Configuration / first run setup
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: mods
+    attributes:
+      label: Affected mod links
+      description: The lines from `mods.txt` that trigger the problem, if any.
+      placeholder: https://www.nexusmods.com/skyrimspecialedition/mods/12604
+      render: text
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Put the link above into mods.txt
+        2. Run python main.py
+        3. ...
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log output
+      description: The relevant part of the run log from `logs/` or the terminal (redact anything sensitive).
+      render: text
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Config
+      description: Your `config.toml` with `session_cookie` removed, or just the settings you changed.
+      render: toml
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Windows 11, Ubuntu 24.04, macOS 15, ...
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      description: Output of `python --version`
+      placeholder: "3.12.4"
+    validations:
+      required: true
+
+  - type: input
+    id: commit
+    attributes:
+      label: Version / commit
+      description: Output of `git rev-parse --short HEAD`, or the date you downloaded it
+    validations:
+      required: true
+
+  - type: dropdown
+    id: account
+    attributes:
+      label: Nexus Mods account
+      options:
+        - Free
+        - Premium
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I'm on the latest commit of `main`
+          required: true
+        - label: If downloads fail with "session cookie probably expired", I grabbed a fresh `nexusmods_session` cookie first
+          required: true
+        - label: I removed my session cookie, tokens and other personal data from everything above
+          required: true
