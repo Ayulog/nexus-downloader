@@ -26,6 +26,7 @@ from ui import (
 )
 
 thread_local = threading.local()
+archive_owners = {}
 
 
 class Stopped(Exception):
@@ -197,7 +198,14 @@ def scan_mod(domain, mod_id):
     folder = mod_folder(domain, mod_id, name)
     items = []
     for f in files:
-        target = folder / f"{mod_id}-{f['file_id']}-{safe_name(f['file_name'])}"
+        filename = f['file_name']
+        if not filename or safe_name(filename) != filename:
+            raise ModError(label, f"cannot save original filename on this system: {filename!r}")
+        target = folder / filename
+        key = str(target).casefold()
+        owner = (domain, mod_id, f['file_id'])
+        if archive_owners.setdefault(key, owner) != owner:
+            raise ModError(label, f"filename conflict: {filename}; original name preserved, conflicting file skipped")
         out = extract_dir(folder, f, mod_id)
         items.append((f, target, out, already_downloaded(target, out)))
     return label, folder, items

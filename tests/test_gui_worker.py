@@ -21,8 +21,11 @@ class WorkerTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             return result.stdout
 
-    def test_archives_share_only_game_folder_and_names_do_not_collide(self):
-        self.run_isolated("\nimport downloader as d\nd.mod_info = lambda *args: {'name': 'Test mod'}\nd.mod_files = lambda *args: [{'file_id': 7, 'file_name': 'test.zip', 'name': 'Main', 'version': '1'}]\nold = d.DOWNLOAD_DIR / 'stardewvalley' / 'Old mod (42)'\nold.mkdir(parents=True)\n(old / 'test.zip').write_bytes(b'old')\n_, folder, items = d.scan_mod('stardewvalley', 42)\nassert folder == d.DOWNLOAD_DIR / 'stardewvalley', folder\nassert items[0][1] == folder / '42-7-test.zip'\nitems[0][1].write_bytes(b'complete')\nassert d.scan_mod('stardewvalley', 42)[2][0][3] is True\nother = d.scan_mod('stardewvalley', 43)[2][0]\nassert other[1] != items[0][1]\nassert other[2] != items[0][2]\nassert other[3] is False\nassert (old / 'test.zip').read_bytes() == b'old'\n")
+    def test_original_archive_name_and_single_game_folder_are_preserved(self):
+        self.run_isolated('\nimport downloader as d\nfilename = "Grandpa\'s Farm-3753-1-15-11-1751325509.zip"\nd.mod_info = lambda *args: {\'name\': "Grandpa\'s Farm"}\nd.mod_files = lambda *args: [{\'file_id\': 12345, \'file_name\': filename, \'name\': \'Main\', \'version\': \'1\'}]\nold = d.DOWNLOAD_DIR / \'stardewvalley\' / \'Old mod (3753)\'\nold.mkdir(parents=True)\n(old / \'test.zip\').write_bytes(b\'old\')\n_, folder, items = d.scan_mod(\'stardewvalley\', 3753)\nassert folder == d.DOWNLOAD_DIR / \'stardewvalley\'\nassert items[0][1].name == filename, items[0][1].name\nitems[0][1].write_bytes(b\'complete\')\nassert d.scan_mod(\'stardewvalley\', 3753)[2][0][3] is True\nassert (old / \'test.zip\').read_bytes() == b\'old\'\n')
+
+    def test_conflicting_original_names_are_reported_without_renaming(self):
+        self.run_isolated("\nimport downloader as d\nd.mod_info = lambda *args: {'name': 'Test mod'}\nd.mod_files = lambda *args: [{'file_id': 7, 'file_name': 'same.zip', 'name': 'Main', 'version': '1'}]\nd.scan_mod('stardewvalley', 42)\ntry:\n    d.scan_mod('stardewvalley', 43)\nexcept d.ModError as error:\n    assert 'same.zip' in str(error)\nelse:\n    raise AssertionError('different files claimed the same archive name')\n")
 
     def test_browser_login_can_be_cancelled_without_credentials(self):
         self.run_isolated('''

@@ -4,7 +4,7 @@
 
 ## 便携 EXE 版（推荐）
 
-从本仓库 GitHub Releases 下载 `NexusDownloader-v0.1.0-windows-x64.zip`，完整解压后双击 **NexusDownloader.exe**，无需安装 Python。请保留同目录的 **NexusDownloaderWorker.exe**，它是界面调用的后台下载程序。
+从本仓库 GitHub Releases 下载 `NexusDownloader-v0.1.1-windows-x64.zip`，完整解压后双击 **NexusDownloader.exe**，无需安装 Python。请保留同目录的 **NexusDownloaderWorker.exe**，它是界面调用的后台下载程序。
 
 配置、链接和默认下载目录保存在 EXE 所在目录；请解压到可写目录。不要在 ZIP 预览中直接运行。OAuth 会话仍沿用原项目的用户目录文件。
 
@@ -30,11 +30,11 @@ python -m venv .venv
 ```text
 downloads/
   stardewvalley/
-    963-12345-original-mod-name.zip
-    9999-23456-another-mod.7z
+    Grandpa's Farm-3753-1-15-11-1751325509.zip
+    another-mod.7z
 ```
 
-文件名前的 MOD ID 与文件 ID 用于避免同名覆盖。开启解压时，每个压缩包的内容仍解压到独立子目录。旧版已生成的 MOD 子目录不自动移动或删除；新下载使用上述布局。
+压缩包使用 Nexus 提供的原始文件名，不额外添加 ID 或前缀。同一次下载任务中不同文件出现相同原名时会报错并跳过冲突项，不自动改名。开启解压时，每个压缩包的内容仍解压到独立子目录。旧版已生成的 MOD 子目录不自动移动或删除；新下载使用上述布局。
 
 ## 使用
 
@@ -68,7 +68,7 @@ downloads/
 在已执行 Setup-GUI.cmd 的 Windows x64 环境运行：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File build-release.ps1 -Version 0.1.0
+powershell -NoProfile -ExecutionPolicy Bypass -File build-release.ps1 -Version 0.1.1
 ```
 
 脚本运行测试，再用 PyInstaller 分别打包窗口与后台，输出 `release/` 下的便携 ZIP 和 SHA-256 校验文件。打包使用明确的文件清单，不包含 Cookie、会话、下载或本机配置。
