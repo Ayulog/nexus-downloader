@@ -1,3 +1,4 @@
 curl_cffi>=0.16
 rich>=13.9
 py7zr>=1.1
+tomlkit>=0.13,<1

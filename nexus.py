@@ -1,6 +1,6 @@
 import time
 
-from auth import USER_AGENT, get_token, http_client
+from auth import USER_AGENT, get_token, http_client, stop_event
 from config import (
     ALL_FILES_PER_CATEGORY, API_URL, APP_VERSION, DOWNLOAD_URL_ENDPOINT, FALLBACK_CATEGORIES, FILE_CATEGORIES,
     NEXUS_SESSION_COOKIE, PROTOCOL_VERSION, RATE_LIMIT_WAIT_S,
@@ -14,6 +14,8 @@ class ApiError(Exception):
 
 def api_get(path):
     while True:
+        if stop_event.is_set():
+            raise InterruptedError("Cancelled")
         resp = http_client().get(f"{API_URL}{path}", headers={
             "Authorization": f"Bearer {get_token()}",
             "Application-Name": "Vortex",
@@ -23,7 +25,8 @@ def api_get(path):
         })
         if resp.status_code == 429:
             log("INFO", f"API rate limit hit, waiting {RATE_LIMIT_WAIT_S}s")
-            time.sleep(RATE_LIMIT_WAIT_S)
+            if stop_event.wait(RATE_LIMIT_WAIT_S):
+                raise InterruptedError("Cancelled")
             continue
         if not resp.ok:
             try:

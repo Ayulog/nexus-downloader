@@ -2,11 +2,11 @@ import shutil
 import tomllib
 from pathlib import Path
 
-BASE_DIR = Path(__file__).parent
+from app_paths import BASE_DIR, TEMPLATE_DIR
 CONFIG_FILE = BASE_DIR / "config.toml"
 
 if not CONFIG_FILE.exists():
-    shutil.copy(BASE_DIR / "config.example.toml", CONFIG_FILE)
+    shutil.copy(TEMPLATE_DIR / "config.example.toml", CONFIG_FILE)
 
 with open(CONFIG_FILE, "rb") as fh:
     _cfg = tomllib.load(fh)

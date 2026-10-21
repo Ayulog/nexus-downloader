@@ -5,6 +5,7 @@ import threading
 import time
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import nullcontext
 from pathlib import Path
 
 import py7zr
@@ -13,7 +14,7 @@ from rich.console import Group
 from rich.live import Live
 from rich.text import Text
 
-from auth import get_token
+from auth import get_token, stop_event
 from config import (
     ARCHIVE_EXTENSIONS, CHUNK_SIZE, CONFIG_FILE, NEXUS_SESSION_COOKIE, CONNECT_TIMEOUT_S, DELETE_ARCHIVE_AFTER_EXTRACT, DOWNLOAD_DIR, DOWNLOAD_RETRIES,
     EXTRACT, FILE_CATEGORIES, MAX_PARALLEL_DOWNLOADS, MAX_QUEUED_LINKS, MOD_LIST, READ_TIMEOUT_S, REQUEST_DELAY_S,
@@ -24,7 +25,6 @@ from ui import (
     console, finish, fit, hms, log, open_log, progress, record_failure, short, size_str, stats, stats_lock, view,
 )
 
-stop_event = threading.Event()
 thread_local = threading.local()
 
 
@@ -37,28 +37,19 @@ def safe_name(name):
 
 
 def mod_folder(domain, mod_id, mod_name):
-    base = DOWNLOAD_DIR / domain
-    if base.exists():
-        existing = next(base.glob(f"* ({mod_id})"), None)
-        if existing:
-            return existing
-    folder = base / f"{safe_name(mod_name)[:80]} ({mod_id})"
-    legacy = next(DOWNLOAD_DIR.glob(f"*_{domain}_{mod_id}"), None)
-    if legacy:
-        base.mkdir(parents=True, exist_ok=True)
-        legacy.rename(folder)
-    return folder
+    # Archives share a single game folder. Existing older layouts stay untouched.
+    return DOWNLOAD_DIR / domain
 
 
 def is_archive(path):
     return path.suffix.lower() in ARCHIVE_EXTENSIONS
 
 
-def extract_dir(folder, f):
+def extract_dir(folder, f, mod_id):
     name = f["name"]
     if f.get("version") and f["version"] not in name:
         name = f"{name} {f['version']}"
-    return folder / safe_name(name)
+    return folder / f"{mod_id}-{f['file_id']}-{safe_name(name)}"
 
 
 def is_extracted(out):
@@ -173,6 +164,8 @@ def download(url, target, out, size, mod_name):
 
 
 def acquire(slots):
+    if stop_event.is_set():
+        raise Stopped
     while not slots.acquire(timeout=0.25):
         if stop_event.is_set():
             raise Stopped
@@ -204,8 +197,8 @@ def scan_mod(domain, mod_id):
     folder = mod_folder(domain, mod_id, name)
     items = []
     for f in files:
-        target = folder / safe_name(f["file_name"])
-        out = extract_dir(folder, f)
+        target = folder / f"{mod_id}-{f['file_id']}-{safe_name(f['file_name'])}"
+        out = extract_dir(folder, f, mod_id)
         items.append((f, target, out, already_downloaded(target, out)))
     return label, folder, items
 
@@ -315,6 +308,8 @@ def queue_mod(scanner, domain, mod_id, link, pool, slots, futures):
 
 def worker(slots, url, target, out, size, mod_name):
     try:
+        if stop_event.is_set():
+            return
         download(url, target, out, size, mod_name)
     finally:
         slots.release()
@@ -344,7 +339,7 @@ def preflight(mods):
     return True
 
 
-def run():
+def run(*, headless=False):
     mods = read_mod_list()
     if not preflight(mods):
         return
@@ -362,17 +357,26 @@ def run():
     scanner = Scanner(mods)
     scanner.start()
     try:
-        with Live(view(UpNext(scanner, mods)), console=console, screen=True, refresh_per_second=10):
+        with nullcontext() if headless else Live(view(UpNext(scanner, mods)), console=console, screen=True, refresh_per_second=10):
             try:
                 for domain, mod_id, link in mods:
+                    if stop_event.is_set():
+                        raise Stopped
                     queue_mod(scanner, domain, mod_id, link, pool, slots, futures)
                     stats["processed"] += 1
                 while not all(f.done() for f in futures):
-                    time.sleep(0.25)
+                    if stop_event.wait(0.25):
+                        raise Stopped
             except (KeyboardInterrupt, Stopped):
                 stop_event.set()
                 stats["stopping"] = True
                 log("INFO", "stopping, removing partial downloads")
-            pool.shutdown(wait=True, cancel_futures=True)
+    except BaseException:
+        stop_event.set()
+        raise
     finally:
+        if any(not f.done() for f in futures):
+            stop_event.set()
+        pool.shutdown(wait=True, cancel_futures=True)
+        scanner.join()
         finish()

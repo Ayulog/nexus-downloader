@@ -4,3 +4,13 @@ logs/
 config.toml
 *.part
 mods.txt
+
+.venv/
+.ai/
+*.tmp
+.python/
+
+build/
+dist/
+release/
+*.spec

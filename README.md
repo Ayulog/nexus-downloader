@@ -10,6 +10,10 @@ picking the right file, downloading it and optionally unpacking it.
   <img alt="nexus-downloader in the terminal" src="assets/terminal.png" width="800">
 </p>
 
+## Desktop GUI (Windows)
+
+Download the Windows portable EXE bundle from [Releases](https://github.com/Ayulog/nexus-downloader/releases), extract it, and open `NexusDownloader.exe`. For source checkouts, double-click `Start-GUI.cmd` for the Chinese desktop interface. First-run setup uses a project-local virtual environment; Python 3.11+ with Tcl/Tk or `uv` is required. See [the GUI guide](README-GUI.zh-CN.md) for login, settings and testing. The original CLI remains available.
+
 ## Setup
 
 ```bash

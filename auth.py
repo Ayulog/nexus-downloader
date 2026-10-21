@@ -15,6 +15,7 @@ from config import CLIENT_ID, OAUTH_URL, PROTOCOL_VERSION, SESSION_FILE
 
 USER_AGENT = f"NexusApiClient/{PROTOCOL_VERSION} ({platform.system()} {platform.release()}; x64) Python"
 
+stop_event = threading.Event()
 token_lock = threading.Lock()
 _local = threading.local()
 
@@ -77,9 +78,13 @@ def browser_login():
     CallbackHandler.result = {}
     deadline = time.time() + 300
     server.timeout = 1
-    while not CallbackHandler.result and time.time() < deadline:
-        server.handle_request()
-    server.server_close()
+    try:
+        while not CallbackHandler.result and time.time() < deadline:
+            if stop_event.is_set():
+                raise InterruptedError("Login cancelled")
+            server.handle_request()
+    finally:
+        server.server_close()
 
     result = CallbackHandler.result
     if result.get("state") != state or "code" not in result:
@@ -100,6 +105,8 @@ def save_session(reply):
 
 
 def get_token():
+    if stop_event.is_set():
+        raise InterruptedError("Cancelled")
     with token_lock:
         if SESSION_FILE.exists():
             session = json.loads(SESSION_FILE.read_text())
